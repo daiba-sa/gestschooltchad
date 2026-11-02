@@ -8,7 +8,6 @@ from pathlib import Path
 import flet as ft
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 
-
 # ==========================================================
 # PROFIL AFFICHE — FLET 1.0.4
 # ==========================================================
