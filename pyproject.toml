@@ -4,5 +4,6 @@ version = "1.0.0"
 description = "Mon application"
 requires-python = ">=3.10"
 dependencies = [
-  "flet"
+  "flet",
+  "pillow"
 ]
