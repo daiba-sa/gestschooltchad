@@ -1,4 +1,3 @@
-
 import asyncio
 import base64
 import textwrap
@@ -8,8 +7,9 @@ from pathlib import Path
 import flet as ft
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 
+
 # ==========================================================
-# PROFIL AFFICHE — FLET 1.0.4
+# PROFIL AFFICHE — FLET 1.0
 # ==========================================================
 
 LARGEUR, HAUTEUR = 1080, 1920
@@ -43,14 +43,17 @@ def charger_police(taille, gras=False):
     if gras:
         chemins = [
             "C:/Windows/Fonts/arialbd.ttf",
-            "C:/Windows/Fonts/calibrib.ttf",
             "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+            "/system/fonts/Roboto-Bold.ttf",
+            "/system/fonts/DroidSans-Bold.ttf",
+            "/system/fonts/Roboto-Regular.ttf",
         ]
     else:
         chemins = [
             "C:/Windows/Fonts/arial.ttf",
-            "C:/Windows/Fonts/calibri.ttf",
             "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "/system/fonts/Roboto-Regular.ttf",
+            "/system/fonts/DroidSans.ttf",
         ]
 
     for chemin in chemins:
@@ -60,7 +63,10 @@ def charger_police(taille, gras=False):
             except OSError:
                 continue
 
-    return ImageFont.load_default()
+    try:
+        return ImageFont.load_default(size=taille)
+    except TypeError:
+        return ImageFont.load_default()
 
 
 def lire_photo(donnees):
@@ -222,7 +228,6 @@ def main(page: ft.Page):
 
     # ------------------------------------------------------
     # NOTIFICATIONS INTÉGRÉES À LA PAGE
-    # Aucun appel à page.open() ou SnackBar nécessaire.
     # ------------------------------------------------------
 
     texte_message = ft.Text(
@@ -302,7 +307,6 @@ def main(page: ft.Page):
         ),
     )
 
-    # Toujours fournir src à ft.Image sous Flet 1.0.4.
     apercu_photo = ft.Image(
         src="",
         width=125,
@@ -372,7 +376,6 @@ def main(page: ft.Page):
             donnees,
         )
 
-        # Ne modifier l'état qu'après lecture réussie.
         photo_bytes = nouvelle_photo
         affiche_bytes = None
 
@@ -394,28 +397,11 @@ def main(page: ft.Page):
         page.update()
 
     # ------------------------------------------------------
-    # SÉLECTEUR DE FICHIERS
+    # SÉLECTEUR DE FICHIERS (Flet 1.0 : service de la page)
     # ------------------------------------------------------
 
-    async def photo_selectionnee(e):
-        fichiers = getattr(e, "files", None)
+    selecteur = ft.FilePicker()
 
-        if not fichiers:
-            return
-
-        try:
-            await traiter_fichier(fichiers[0])
-        except Exception as erreur:
-            notifier(
-                f"Impossible de lire la photo : {erreur}",
-                succes=False,
-            )
-
-    selecteur = ft.FilePicker(
-        on_result=photo_selectionnee
-    )
-
-    # Dans Flet 1.0.4, FilePicker est un service de la page.
     if hasattr(page, "services"):
         page.services.append(selecteur)
     elif hasattr(page, "overlay"):
@@ -431,11 +417,8 @@ def main(page: ft.Page):
                 dialog_title="Choisir une photo",
                 allow_multiple=False,
                 file_type=ft.FilePickerFileType.IMAGE,
-                with_data=True,
             )
 
-            # Si cette version renvoie directement les fichiers,
-            # les traiter. Sinon, on_result les prendra en charge.
             if resultat:
                 await traiter_fichier(resultat[0])
 
@@ -537,7 +520,8 @@ def main(page: ft.Page):
                 notifier("Affiche enregistrée avec succès.")
             else:
                 notifier(
-                    "Vérifie le dossier Téléchargements de ton navigateur."
+                    "Enregistrement annulé ou terminé. "
+                    "Vérifie le dossier choisi."
                 )
 
         except Exception as erreur:
